@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Portal Acces Whatsapp</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+    <header>
+        <div>
+            <b id="brand">TOKO SAYA</b>
+            <small>WhatsApp Management</small>
+        </div>
+        <div id="profile"></div>
+    </header>
+
+    <main>
+        <section id="login" class="panel">
+            <h1>Masuk ke dashboard</h1>
+            <p>Login menggunakan akun Google yang telah didaftarkan oleh Super Admin.</p>
+            
+            <div id="g_id_onload"
+              data-client_id="172300960134-0sbv9969infik0kmje3hbsaqhpl2a2sf.apps.googleusercontent.com"
+              data-callback="onGoogleLogin"
+              data-auto_prompt="false">
+          </div>
+            
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-size="large"
+                 data-theme="outline"
+                 data-text="signin_with"
+                 data-shape="rectangular">
+            </div>
+            
+            <p class="muted">Email harus terdaftar pada tabel USERS.</p>
+        </section>
+
+        <section id="app" hidden>
+            <nav>
+                <button data-view="overview">Ringkasan</button>
+                <button data-view="contacts">CRM Kontak</button>
+                <button data-view="keywords">Keyword Reply</button>
+                <button data-view="messages">Kirim Pesan</button>
+                <button data-view="schedule">Jadwalkan</button>
+                <button data-view="numbers" id="numbersNav">Phone Numbers</button>
+            </nav>
+
+            <div class="toolbar">
+                <label>Nomor WhatsApp 
+                    <select id="phone"></select>
+                </label>
+                <button id="refresh">Muat ulang</button>
+            </div>
+
+            <div id="view"></div>
+        </section>
+    </main>
+
+    <script src="/assets/app.js"></script>
+</body>
+</html>
