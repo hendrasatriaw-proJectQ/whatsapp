@@ -29,7 +29,7 @@ async function authRequest(action, extra={}) {
 }
 
 async function enterDashboard(result) {
-    $('brand').textContent = result.title || 'TOKO SAYA';
+    $('brand').textContent = result.title || 'ProjectQ';
     $('login').hidden = true; $('app').hidden = false;
     $('profile').textContent = ME.email + ' · ' + ME.role;
     $('numbersNav').hidden = String(ME.role).toLowerCase() !== 'superadmin';
