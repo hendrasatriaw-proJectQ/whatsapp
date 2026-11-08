@@ -4,38 +4,28 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Portal Acces Whatsapp</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
     <header>
         <div>
-            <b id="brand">ProjectQ Portal Acces</b>
+            <b id="brand">ProjectQ</b>
             <small>WhatsApp Management</small>
         </div>
-        <div id="profile"></div>
+        <div><span id="profile"></span> <button id="logout" class="secondary">Keluar</button></div>
     </header>
 
     <main>
         <section id="login" class="panel">
             <h1>Masuk ke dashboard</h1>
-            <p>Login menggunakan akun Google yang telah didaftarkan oleh Super Admin.</p>
-            
-            <div id="g_id_onload"
-              data-client_id="172300960134-0sbv9969infik0kmje3hbsaqhpl2a2sf.apps.googleusercontent.com"
-              data-callback="onGoogleLogin"
-              data-auto_prompt="false">
-          </div>
-            
-            <div class="g_id_signin"
-                 data-type="standard"
-                 data-size="large"
-                 data-theme="outline"
-                 data-text="signin_with"
-                 data-shape="rectangular">
-            </div>
-            
-            <p class="muted">Email harus terdaftar pada tabel USERS.</p>
+            <p>Gunakan email yang terdaftar saat pendaftaran ke admin ProjectQ.</p>
+            <form id="loginForm">
+                <label>Email / Username<input id="username" type="email" autocomplete="username" required placeholder="admin@tokosaya.com"></label>
+                <label>Password<input id="password" type="password" autocomplete="current-password" required minlength="10" placeholder="Minimal 10 karakter"></label>
+                <button id="loginButton" type="submit">Masuk</button>
+                <p id="loginError" class="error" role="alert"></p>
+            </form>
+            <p class="muted">HANYA YANG SUDAH TERDAFTAR BISA LOGIN!.</p>
         </section>
 
         <section id="app" hidden>
