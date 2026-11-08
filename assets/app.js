@@ -1,99 +1,53 @@
-let ID_TOKEN = '';
+let SESSION_TOKEN = '';
 let ME = null;
 let PHONES = [];
 let PHONE = '';
-
 const $ = id => document.getElementById(id);
 
-window.onGoogleLogin = async r => {
-    ID_TOKEN = r.credential;
+$('loginForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    $('loginError').textContent = '';
+    $('loginButton').disabled = true;
     try {
-        const b = await api('bootstrap');
-        ME = b.user;
-        PHONES = b.phones || [];
-
-        $('brand').textContent = b.title || 'TOKO SAYA';
-        $('login').hidden = true;
-        $('app').hidden = false;
-        $('profile').textContent = ME.email + ' · ' + ME.role;
-        $('numbersNav').hidden = ME.role !== 'superadmin';
-
-        $('phone').innerHTML = PHONES.map(p =>
-            `<option value="${esc(p.phoneId)}">
-                ${esc(p.name || p.displayPhone || p.phoneId)} · ${esc(p.phoneId)}
-            </option>`
-        ).join('');
-
-        PHONE = $('phone').value;
-
-        $('phone').onchange = () => {
-            PHONE = $('phone').value;
-            load('overview');
-        };
-
-        $('refresh').onclick = () => load('overview');
-
-        document.querySelectorAll('[data-view]').forEach(btn => {
-            btn.onclick = () => load(btn.dataset.view);
-        });
-
-        await load('overview');
+        const result = await authRequest('login', { email: $('username').value.trim(), password: $('password').value });
+        SESSION_TOKEN = result.sessionToken;
+        ME = result.user;
+        PHONES = result.phones || [];
+        await enterDashboard(result);
     } catch (e) {
-        alert(e.message);
-    }
-};
+        $('loginError').textContent = e.message;
+    } finally { $('loginButton').disabled = false; }
+});
+
+async function authRequest(action, extra={}) {
+    const response = await fetch('/api', { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({action,...extra}) });
+    const text = await response.text();
+    if (!text || !text.trim()) throw new Error('API mengembalikan respons kosong. HTTP Status: '+response.status+'. Periksa Cloudflare Pages Functions.');
+    let result; try { result=JSON.parse(text); } catch(e) { throw new Error('API tidak mengembalikan JSON valid: '+text.substring(0,250)); }
+    if (!response.ok || !result.ok) throw new Error(result.error || 'HTTP Error '+response.status);
+    return result;
+}
+
+async function enterDashboard(result) {
+    $('brand').textContent = result.title || 'TOKO SAYA';
+    $('login').hidden = true; $('app').hidden = false;
+    $('profile').textContent = ME.email + ' · ' + ME.role;
+    $('numbersNav').hidden = String(ME.role).toLowerCase() !== 'superadmin';
+    $('phone').innerHTML = PHONES.map(p => `<option value="${esc(p.phoneId)}">${esc(p.name || p.displayPhone || p.phoneId)} · ${esc(p.phoneId)}</option>`).join('');
+    PHONE = $('phone').value;
+    $('phone').onchange = () => { PHONE=$('phone').value; load('overview'); };
+    $('refresh').onclick = () => load('overview');
+    $('logout').onclick = async () => { try { await authRequest('logout',{sessionToken:SESSION_TOKEN}); } catch(e) {} SESSION_TOKEN='';ME=null;PHONES=[];PHONE='';$('app').hidden=true;$('login').hidden=false;$('password').value='';$('profile').textContent=''; };
+    document.querySelectorAll('[data-view]').forEach(btn => { btn.onclick=()=>load(btn.dataset.view); });
+    await load('overview');
+}
 
 async function api(action, extra = {}) {
-  const response = await fetch('/api', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify({
-      action,
-      idToken: ID_TOKEN,
-      phoneId: PHONE,
-      ...extra
-    })
-  });
-
+  const response = await fetch('/api', { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({action,sessionToken:SESSION_TOKEN,phoneId:PHONE,...extra}) });
   const responseText = await response.text();
-
-  // Respons kosong: tampilkan informasi yang lebih jelas.
-  if (!responseText || !responseText.trim()) {
-    throw new Error(
-      'API mengembalikan respons kosong. ' +
-      'HTTP Status: ' + response.status +
-      '. Periksa Cloudflare Pages Functions.'
-    );
-  }
-
-  let result;
-
-  try {
-    result = JSON.parse(responseText);
-  } catch (error) {
-    throw new Error(
-      'API tidak mengembalikan JSON yang valid. ' +
-      'HTTP Status: ' + response.status +
-      '. Respons awal: ' + responseText.substring(0, 250)
-    );
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      result.error ||
-      'HTTP Error ' + response.status
-    );
-  }
-
-  if (!result.ok) {
-    throw new Error(
-      result.error || 'API error'
-    );
-  }
-
+  if (!responseText || !responseText.trim()) throw new Error('API mengembalikan respons kosong. HTTP Status: '+response.status+'. Periksa Cloudflare Pages Functions.');
+  let result; try { result=JSON.parse(responseText); } catch(error) { throw new Error('API tidak mengembalikan JSON valid. HTTP Status: '+response.status+'. Respons awal: '+responseText.substring(0,250)); }
+  if (!response.ok || !result.ok) throw new Error(result.error || 'HTTP Error '+response.status);
   return result;
 }
 
